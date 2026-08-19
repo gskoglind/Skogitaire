@@ -45,11 +45,6 @@
   }
   .seg button.on{background:rgba(255,255,255,.24);color:#fff}
   .seg button:disabled{opacity:.38;cursor:default}
-  .seg.unlocking{animation:segPulse 1.1s ease-in-out 5}
-  @keyframes segPulse{
-    0%,100%{box-shadow:0 0 0 0 rgba(255,226,110,0)}
-    50%    {box-shadow:0 0 0 6px rgba(255,226,110,.5)}
-  }
   .spacer{flex:1 1 auto}
   .moves{font-size:.95rem;font-weight:600;opacity:.92;font-variant-numeric:tabular-nums;white-space:nowrap}
 
@@ -165,7 +160,7 @@
   <button class="pill" id="undoBtn" title="Undo (U)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8v5h5"/><path d="M3.6 13A8.5 8.5 0 1 0 6 7.1L3 10"/></svg>Undo</button>
   <div class="seg" id="drawSeg">
-    <button data-n="1" disabled title="Unlocks if you run out of moves">Draw 1</button><button data-n="3" class="on">Draw 3</button>
+    <button data-n="1" title="Turn one card at a time">Draw 1</button><button data-n="3" class="on" title="Turn three at a time">Draw 3</button>
   </div>
   <div class="spacer"></div>
   <span class="moves">Moves: <span id="moves">0</span></span>
@@ -199,7 +194,7 @@
       <li>In the columns, stack cards down in alternating colours. Only a King starts an empty column.</li>
       <li>Drag cards, or double-click one to place it automatically.</li>
       <li>Click the deck to deal three at a time. When it runs out, click again to recycle.</li>
-      <li>If the deal goes dead, Draw 1 unlocks so you can play on one card at a time.</li>
+      <li>Switch to Draw 1 any time — useful for finishing a deal that has stalled.</li>
       <li>If you sit still a moment, a card will pulse to show a move you missed.</li>
       <li>Once the deck is empty and every card is face up, Auto-Finish appears and plays out the rest.</li>
     </ul>
@@ -244,7 +239,7 @@
 
   var cards = [], slots = {}, faceUp = [], piles = null;
   var posMap = {}, layout = {}, history = [];
-  var drawCount = 3, moves = 0, won = false, drag = null, draw1Unlocked = false;
+  var drawCount = 3, preferredDraw = 3, moves = 0, won = false, drag = null;
   var autoRunning = false, lastAuto = { t: 0, x: -1e9, y: -1e9 }, lastClick = null;
   var cw = 60, ch = 85, gap = 8, pad = 8, upOff = 20, downOff = 9, wasteOff = 15, rowY2 = 100;
 
@@ -352,10 +347,7 @@
     won = false; autoRunning = false;
     winEl.classList.remove('show');
     history = []; moves = 0; drag = null; lastClick = null;
-    setDrawCount(3);
-    draw1Unlocked = false;
-    drawSeg.querySelector('[data-n="1"]').disabled = true;
-    drawSeg.classList.remove('unlocking');
+    setDrawCount(preferredDraw);
     hideToast();
 
     var ids = [];
@@ -516,7 +508,6 @@
                      || !allTableauFaceUp()
                      || piles.stock.length > 0 || piles.waste.length > 0
                      || !bestFoundationMove();
-    updateStuck();
   }
 
   /* ================= rules ================= */
@@ -590,10 +581,9 @@
        there flipping the same cards forever. */
     if (!piles.stock.length && !hasAnyMove()){
       sndNope();
-      toast(draw1Unlocked || drawCount === 1
+      toast(drawCount === 1
         ? 'No moves left \u2014 deal a new game'
-        : 'No moves left \u2014 Draw 1 is now available');
-      updateStuck();
+        : 'No moves left \u2014 try Draw 1, or deal a new game');
       return;
     }
 
@@ -714,10 +704,9 @@
     if (won || autoRunning || drag) return;
     if (!hasAnyMove()){
       sndNope();
-      toast(draw1Unlocked || drawCount === 1
+      toast(drawCount === 1
         ? 'No moves left \u2014 deal a new game'
-        : 'No moves left \u2014 Draw 1 is now available');
-      updateStuck();
+        : 'No moves left \u2014 try Draw 1, or deal a new game');
       return;
     }
     var h = findHint();
@@ -794,18 +783,6 @@
   function setDrawCount(n){
     drawCount = n;
     [].forEach.call(drawSeg.children, function(c){ c.classList.toggle('on', +c.dataset.n === n); });
-  }
-
-  function updateStuck(){
-    if (draw1Unlocked || won || autoRunning || drag) return;
-    if (isComplete()) return;        /* a finished board is not a stuck board */
-    if (drawCount !== 3) return;
-    if (hasAnyMove()) return;
-    draw1Unlocked = true;
-    drawSeg.querySelector('[data-n="1"]').disabled = false;
-    drawSeg.querySelector('[data-n="1"]').title = 'Turn one card at a time';
-    drawSeg.classList.add('unlocking');
-    toast('No moves left \u2014 Draw 1 is now available');
   }
 
   /* ================= auto-finish ================= */
@@ -1121,7 +1098,7 @@
     if (!b || b.disabled) return;
     ensureAudio();
     setDrawCount(+b.dataset.n);
-    drawSeg.classList.remove('unlocking');
+    preferredDraw = drawCount;      /* remembered for this sitting; a reload starts on Draw 3 */
     hideToast();
     render();
   });
@@ -1167,7 +1144,7 @@
     setSound: function(v){ audio.on = v; },
     drawCount: function(){ return drawCount; },
     hasAnyMove: hasAnyMove,
-    draw1Locked: function(){ return document.querySelector('#drawSeg [data-n="1"]').disabled; },
+    draw1Locked: function(){ return !!document.querySelector('#drawSeg [data-n="1"]').disabled; },
     scene: function(cols, wasteIds, foundationCounts){
       piles = { stock: [], waste: [], foundation: [[],[],[],[]], tableau: [[],[],[],[],[],[],[]] };
       faceUp = new Array(52).fill(false);
