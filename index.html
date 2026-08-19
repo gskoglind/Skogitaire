@@ -418,25 +418,51 @@
 
   /* ================= layout + render ================= */
 
+  /* Fan spacing, as a fraction of card height.
+     UP_MIN clears the rank; UP_MAX clears the rank and its suit. Never go below
+     UP_MIN - shrink the cards instead, so a number is always readable. */
+  var UP_MIN = 0.30, UP_MAX = 0.44, DOWN_RATIO = 0.12;
+
+  function tallestPile(up, down){          /* in card-heights */
+    var most = 0;
+    for (var t = 0; t < 7; t++){
+      var p = piles.tableau[t], h = 0;
+      for (var j = 0; j < p.length - 1; j++) h += faceUp[p[j]] ? up : down;
+      if (h > most) most = h;
+    }
+    return most;
+  }
+
   function computeLayout(){
     var W = board.clientWidth || 700;
     pad = Math.max(6, W * 0.013);
     gap = Math.max(5, W * 0.016);
-    cw  = (W - pad * 2 - gap * 6) / 7;
+
+    var cwByWidth = (W - pad * 2 - gap * 6) / 7;
+    var availH = Math.max(240, wrap.clientHeight);
+    var fixed  = pad * 2 + gap * 1.5;       /* vertical space that doesn't scale with the cards */
+
+    function heightFor(c, up){
+      return fixed + c * 1.42 * (2 + tallestPile(up, DOWN_RATIO));
+    }
+
+    cw = cwByWidth;
+    var up = UP_MIN;
+    if (heightFor(cw, UP_MIN) <= availH){
+      for (var u = UP_MAX; u > UP_MIN; u -= 0.01){   /* spare room: open the fan up */
+        if (heightFor(cw, u) <= availH){ up = u; break; }
+      }
+    } else {
+      var denom = 1.42 * (2 + tallestPile(UP_MIN, DOWN_RATIO));
+      cw = Math.max(30, (availH - fixed) / denom);   /* tight: smaller cards, readable ranks */
+    }
+
     ch  = cw * 1.42;
+    upOff = ch * up;
+    downOff = ch * DOWN_RATIO;
     wasteOff = cw * 0.26;
     rowY2 = pad + ch + gap * 1.5;
-
-    var need = 0;
-    for (var t = 0; t < 7; t++){
-      var p = piles.tableau[t], h = 0;
-      for (var j = 0; j < p.length - 1; j++) h += faceUp[p[j]] ? 1 : 0.42;
-      if (h > need) need = h;
-    }
-    var room = Math.max(160, wrap.clientHeight - rowY2 - ch - pad * 2);
-    upOff = need > 0 ? Math.min(ch * 0.27, room / need) : ch * 0.27;
-    upOff = Math.max(upOff, ch * 0.095);
-    downOff = Math.min(upOff * 0.42, ch * 0.1);
+    var need = tallestPile(up, DOWN_RATIO);
 
     var root = document.documentElement.style;
     root.setProperty('--cw', cw + 'px');
@@ -451,7 +477,7 @@
     for (var f = 0; f < 4; f++) layout['foundation' + f] = { x: colX(3 + f), y: pad };
     for (var i = 0; i < 7; i++) layout['tableau' + i] = { x: colX(i), y: rowY2 };
 
-    board.style.height = (rowY2 + ch + need * upOff + pad) + 'px';
+    board.style.height = (rowY2 + ch + need * ch + pad) + 'px';
   }
 
   var placed = new Uint8Array(52);

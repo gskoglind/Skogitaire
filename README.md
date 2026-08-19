@@ -32,7 +32,7 @@ offline caching or the install prompt.
 Replace `index.html`, then **bump the cache name** at the top of `sw.js`:
 
 ```js
-const CACHE = 'solitaire-v2';   // was v1
+const CACHE = 'solitaire-v3';   // was v2
 ```
 
 Without that, browsers that already installed it may keep serving the old
@@ -56,7 +56,9 @@ working with no internet connection.
 - Click the deck to deal three. When it empties, click again to recycle.
 - Pause a few seconds and a card **pulses** to show a move you missed.
   The Hint button does it on demand.
-- Games start on **Draw 3**. If the deal goes dead, **Draw 1** unlocks.
+- Games start on **Draw 3**. **Draw 1** is always available — switch any time,
+  handy for finishing a deal that has stalled. Your choice sticks for the
+  sitting; reloading the page starts on Draw 3 again.
 - Once the deck is empty and every card is face up, **Auto-Finish** appears
   and plays out the rest. It is deliberately withheld while cards remain in
   the deck, so it never sits there dealing in circles.
