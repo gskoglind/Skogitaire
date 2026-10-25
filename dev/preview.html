@@ -1,0 +1,100 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Location preview</title>
+<style>
+  html,body{margin:0;height:100%;background:#0d4d2b;overflow:hidden;font:14px system-ui;color:#fff}
+  canvas{position:absolute;left:0;top:0}
+  #bar{position:absolute;right:8px;top:8px;z-index:9;background:rgba(0,0,0,.5);padding:6px;border-radius:6px}
+</style></head>
+<body>
+<!--
+  Dev-only harness for the location modules. Query string:
+    ?loc=sydney&mode=scenery|home|opening|win|surface|back&w=800&h=420&cols=7&t=2.5
+  `t` fast-forwards effects by that many seconds before the first frame (for headless shots).
+-->
+<div id="bar"></div>
+<canvas id="surface"></canvas><canvas id="scene"></canvas><canvas id="fx"></canvas>
+<script src="../js/seeded.js"></script>
+<script>
+  var q = new URLSearchParams(location.search);
+  var key = q.get('loc') || 'japan', mode = q.get('mode') || 'scenery';
+  document.write('<script src="../js/loc-' + key + '.js"><\/script>');
+</script>
+<script>
+(function () {
+  var W = +(q.get('w') || innerWidth), H = +(q.get('h') || innerHeight);
+  var cols = +(q.get('cols') || 7), ff = +(q.get('t') || 0);
+  var dpr = window.devicePixelRatio || 1;
+  var L = (window.LOCATIONS || {})[key] || {};
+  document.getElementById('bar').textContent = key + ' · ' + mode;
+
+  function canvas(id, w, h) {
+    var c = document.getElementById(id);
+    c.width = w * dpr; c.height = h * dpr; c.style.width = w + 'px'; c.style.height = h + 'px';
+    var ctx = c.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); return ctx;
+  }
+
+  // A layout like BoardLayout for a board W wide and H tall (no top bar in the harness).
+  var gap = Math.max(5, W * 0.012);
+  var cw = Math.max(28, (W - 20 - gap * (cols - 1)) / cols);
+  cw = Math.min(cw, (H / (3.2 + 1.5)) / 1.4);
+  var ch = cw * 1.4, originX = (W - (cols * cw + (cols - 1) * gap)) / 2, top = ch * 0.15;
+  function rect(slot) { var l = originX + slot * (cw + gap); return { left: l, top: top, width: cw, height: ch, cx: l + cw / 2, cy: top + ch / 2, bottom: top + ch }; }
+  var layout = {
+    boardWidth: W, cardWidth: cw, cardHeight: ch, gap: gap, originX: originX, topRowY: top,
+    tableauY: top + ch * 1.2, contentHeight: top + ch * 1.2 + ch * 3.2, columns: cols,
+    isKlondike: cols === 7, isFreeCell: cols === 8, isGolf: false, isSpider: cols === 10,
+    slotX: function (i) { return originX + i * (cw + gap); },
+    foundationRect: function (f) { return rect(cols === 10 ? 2 + f : cols - 4 + f); },
+    stockRect: function () { return rect(0); }, wasteRect: function () { return rect(1); }
+  };
+  var seal = { cx: rect(2).cx, cy: rect(2).cy, d: cw * 0.8 };
+  function play(name) { console.log('play', name); }
+
+  var sctx = canvas('surface', W, H), gctx = canvas('scene', W, H), fctx = canvas('fx', W, H);
+  if (L.surface) L.surface(sctx, W, H, ff);
+  if (mode === 'surface' && L.menuSurface) { sctx.clearRect(0, 0, W, H); L.menuSurface(sctx, W, H); }
+  if (L.scenery && mode !== 'back') L.scenery(gctx, layout, H);
+  // Faint slot outlines so placement can be judged.
+  gctx.strokeStyle = 'rgba(255,255,255,.35)';
+  for (var i = 0; i < cols; i++) { var r = rect(i); gctx.strokeRect(r.left, r.top, r.width, r.height); gctx.strokeRect(r.left, layout.tableauY, r.width, r.height); }
+
+  if (mode === 'back' && L.drawBack) {
+    gctx.save(); gctx.translate(40, 40); gctx.fillStyle = '#fff'; gctx.fillRect(0, 0, 120, 168); L.drawBack(gctx, 120, 168); gctx.restore();
+  }
+
+  var effects = [], layer = null;
+  if (mode === 'home' && L.homeTouch) {
+    [0, 1, 2].forEach(function (f) { effects.push({ at: f * 0.7, make: function () { return L.homeTouch(layout, f, seal); } }); });
+  }
+  if (mode === 'opening' && L.opening) effects.push({ at: 0, make: function () { return L.opening(W, H, play); } });
+  if (mode === 'win' && L.win) layer = L.win(W, H, play);
+
+  var live = [], clock = 0, TICK = 1 / 60;
+  function step(dt) {
+    clock += dt;
+    effects.forEach(function (e) { if (!e.started && clock >= e.at) { e.started = true; live.push(e.make()); } });
+    live.forEach(function (e) { e.step(dt); });
+    live = live.filter(function (e) { return !e.done; });
+    if (layer) layer.step(dt);
+  }
+  for (var k = 0; k < ff * 60; k++) step(TICK);
+  addEventListener('pointerdown', function (e) { if (layer && layer.tap) layer.tap(e.clientX, e.clientY); });
+  var last = 0;
+  function frame(now) {
+    var dt = last ? Math.min(0.1, (now - last) / 1000) : 0; last = now;
+    if (L.animatedSurface) { sctx.clearRect(0, 0, W, H); L.surface(sctx, W, H, clock); }
+    step(dt);
+    fctx.clearRect(0, 0, W, H);
+    if (layer) {
+      fctx.fillStyle = 'rgba(0,0,0,' + (L.winDim || 0.25) + ')'; fctx.fillRect(0, 0, W, H);
+      if (layer.drawBehind) layer.drawBehind(fctx);
+      layer.draw(fctx);
+    }
+    live.forEach(function (e) { e.draw(fctx); });
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body></html>

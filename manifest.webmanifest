@@ -1,7 +1,7 @@
 {
   "name": "Solitaire",
   "short_name": "Solitaire",
-  "description": "Klondike solitaire \u2014 draw three, hints, auto-finish.",
+  "description": "Klondike, FreeCell, Golf and Spider on tables from Japan, Sydney, Bermuda and Savannah.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
@@ -11,8 +11,8 @@
     "minimal-ui"
   ],
   "orientation": "any",
-  "background_color": "#10462f",
-  "theme_color": "#0d3f2b",
+  "background_color": "#05331c",
+  "theme_color": "#05331c",
   "categories": [
     "games"
   ],

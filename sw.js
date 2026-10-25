@@ -1,5 +1,5 @@
 /* Bump CACHE when you change the game so browsers pick up the new version. */
-const CACHE = 'solitaire-v3';
+const CACHE = 'solitaire-v4';
 
 const ASSETS = [
   './',
@@ -8,7 +8,31 @@ const ASSETS = [
   './icon-192.png',
   './icon-512.png',
   './icon-maskable-512.png',
-  './apple-touch-icon.png'
+  './apple-touch-icon.png',
+  './seal.png',
+  './js/seeded.js',
+  './js/engine.js',
+  './js/layout.js',
+  './js/loc-japan.js',
+  './js/loc-sydney.js',
+  './js/loc-bermuda.js',
+  './js/loc-savannah.js',
+  './js/cardart.js',
+  './js/celebration.js',
+  './js/app.js',
+  './sounds/shuffle.m4a',
+  './sounds/deal.m4a',
+  './sounds/place.m4a',
+  './sounds/win.m4a',
+  './sounds/scooter.m4a',
+  './sounds/boarding.m4a',
+  './sounds/horn_ship.m4a',
+  './sounds/horn_tug.m4a',
+  './sounds/horn_whistle.m4a',
+  './sounds/city_hall.m4a',
+  './sounds/cabin_chime.m4a',
+  './sounds/flute_open.m4a',
+  './sounds/flute_win.m4a'
 ];
 
 self.addEventListener('install', function (e) {
@@ -34,8 +58,8 @@ self.addEventListener('fetch', function (e) {
   var req = e.request;
   if (req.method !== 'GET') return;
 
-  /* The page itself: try the network first so updates land as soon as she's online,
-     fall back to the cached copy when she isn't. */
+  /* The page itself: try the network first so updates land as soon as you're online,
+     fall back to the cached copy when you aren't. */
   if (req.mode === 'navigate') {
     e.respondWith(
       fetch(req)
