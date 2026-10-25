@@ -1,5 +1,5 @@
 /* Bump CACHE when you change the game so browsers pick up the new version. */
-const CACHE = 'solitaire-v5';
+const CACHE = 'solitaire-v6';
 
 const ASSETS = [
   './',
@@ -75,7 +75,22 @@ self.addEventListener('fetch', function (e) {
     return;
   }
 
-  /* Everything else: cache first, it never changes within a version. */
+  /* The game's code and styles: network first too, so a fix reaches you on the next load;
+     the cache is only the offline fallback. Sounds and images: cache first, they rarely change. */
+  var code = /\.(js|css|webmanifest)$/.test(new URL(req.url).pathname);
+  if (code) {
+    e.respondWith(
+      fetch(req, { cache: 'no-cache' })
+        .then(function (res) {
+          var copy = res.clone();
+          caches.open(CACHE).then(function (c) { c.put(req, copy); });
+          return res;
+        })
+        .catch(function () { return caches.match(req, { ignoreSearch: true }); })
+    );
+    return;
+  }
+
   e.respondWith(
     caches.match(req).then(function (hit) {
       return hit || fetch(req).then(function (res) {
