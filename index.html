@@ -79,10 +79,9 @@
   .card.lifted{box-shadow:0 6px 8px rgba(0,0,0,.40);transition:none}
   .card.dealing{transition:transform .22s ease-out}
   .card.returning{transition:transform .35s cubic-bezier(.34,1.18,.64,1)}
-  .card.hint,.pulse{animation:breath .5s ease-in-out infinite alternate}
+  /* The hint glows in place — no scale breath, so the card holds still to be clicked (Gary). */
   .card.hint::after,.pulse::after{content:"";position:absolute;inset:0;border-radius:10%;border:4px solid var(--yellow);box-shadow:0 0 12px 4px rgba(255,204,0,.7);animation:glow 1.26s linear infinite}
   .pulse{position:absolute;z-index:20000;pointer-events:none;border-radius:10%}
-  @keyframes breath{from{scale:1}to{scale:1.09}}
   @keyframes glow{0%,100%{opacity:1}50%{opacity:.45}}
 
   /* ---------- menus, panels, sheets ---------- */
@@ -167,6 +166,6 @@
 <script src="js/loc-savannah.js"></script>
 <script src="js/cardart.js"></script>
 <script src="js/celebration.js"></script>
-<script src="js/app.js?v=6"></script>
+<script src="js/app.js?v=7"></script>
 </body>
 </html>

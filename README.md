@@ -27,7 +27,7 @@ static files. Live at https://gskoglind.github.io/Skogitaire/.
 ## Publishing an update
 
 Push to `main`; GitHub Pages serves the repo root. Then **bump the cache name** at the top of
-`sw.js` (`solitaire-v6` → `v7`) and `BUILD` in `js/app.js` whenever any file changes. Code is fetched
+`sw.js` (`solitaire-v7` → `v8`) and `BUILD` in `js/app.js` whenever any file changes. Code is fetched
 network-first, so fixes land on the next load; the build number on the start screen shows which
 version a browser is running.
 

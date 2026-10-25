@@ -9,7 +9,7 @@
   function $(id) { return document.getElementById(id); }
 
   /** Shown small on the start screen, so we can tell which version a browser is running. */
-  var BUILD = 6;
+  var BUILD = 7;
   var UNDO_CAP = 300, AUTO_HINT_MOVES = 3, AUTO_COMPLETE_LIMIT = 800;
   var GOLF_HOLES = 9, GOLF_PAR = 4, DOUBLE_TAP_MS = 350, DRAG_PX = 6;
   var TABLES = [['japan', 'Japan'], ['sydney', 'Sydney'], ['bermuda', 'Bermuda'], ['savannah', 'Savannah']];
