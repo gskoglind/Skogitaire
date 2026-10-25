@@ -27,7 +27,7 @@ static files. Live at https://gskoglind.github.io/Skogitaire/.
 ## Publishing an update
 
 Push to `main`; GitHub Pages serves the repo root. Then **bump the cache name** at the top of
-`sw.js` (`solitaire-v4` → `v5`) whenever any file changes, or installed copies may keep
+`sw.js` (`solitaire-v5` → `v6`) whenever any file changes, or installed copies may keep
 serving the old files.
 
 ## Testing locally

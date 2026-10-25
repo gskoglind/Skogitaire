@@ -682,14 +682,20 @@
       e.classList.toggle('dealing', !!(p.dealing && S.dealing));
       e.classList.toggle('returning', !!returning[id]);
       e.classList.toggle('hint', !!(S.hint && S.hint.cardId === id));
+      e._z = p.z;
       if (isNew) { e.style.transition = 'none'; e.style.transform = tf; void e.offsetWidth; e.style.transition = ''; }
       else if (e.style.transform !== tf) {
-        if (!dragging) { e.style.zIndex = p.z + 10000; e._settle = p.z; } // Moving cards fly above the rest.
         e.style.transform = tf;
+        if (!dragging) {
+          // Moving cards fly above the rest, then settle to their place in the stack. A timer,
+          // not transitionend: an interrupted move never fires that, and the card stayed on top.
+          e.style.zIndex = p.z + 10000;
+          clearTimeout(e._settle);
+          e._settle = setTimeout(function (card) { card._settle = null; card.style.zIndex = card._z; card.classList.remove('returning'); }, 420, e);
+        }
       }
-      if (dragging) e.style.zIndex = p.z + 20000;
-      else if (e._settle == null) e.style.zIndex = p.z;
-      else e._settle = p.z;
+      if (dragging) { clearTimeout(e._settle); e._settle = null; e.style.zIndex = p.z + 20000; }
+      else if (!e._settle) e.style.zIndex = p.z;
     });
     Object.keys(cardEls).forEach(function (id) { if (!seen[id]) { cardEls[id].remove(); delete cardEls[id]; } });
     renderPulse();
@@ -708,12 +714,6 @@
     $('board').appendChild(p);
   }
 
-  document.addEventListener('transitionend', function (e) {
-    var t = e.target;
-    if (!t.classList || !t.classList.contains('card') || t._settle == null) return;
-    t.style.zIndex = t._settle; t._settle = null;
-    if (t.classList.contains('returning')) { delete returning[t.dataset.id]; t.classList.remove('returning'); }
-  });
 
   // ---- Input: taps, double-taps and drags (6 px threshold)
 
@@ -780,7 +780,8 @@
       var g = drag;
       drag = null;
       var moved = !!target && move(g.pile, g.index, target);
-      if (!moved) { returning = g.ids; renderCards(); }
+      returning = moved ? {} : g.ids;
+      if (!moved) renderCards();
     } else if (!d.scroll && !cancelled) onTap(d.start, e.timeStamp);
   }
   $('board').addEventListener('pointerup', function (e) { endPointer(e, false); });
