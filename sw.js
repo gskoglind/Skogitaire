@@ -1,5 +1,5 @@
 /* Bump CACHE when you change the game so browsers pick up the new version. */
-const CACHE = 'solitaire-v7';
+const CACHE = 'solitaire-v8';
 
 const ASSETS = [
   './',
