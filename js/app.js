@@ -9,7 +9,8 @@
   function $(id) { return document.getElementById(id); }
 
   /** Shown small on the start screen, so we can tell which version a browser is running. */
-  var BUILD = 8;
+  var BUILD = 9;
+  var gameSerial = 0; // Changes with each deal or resume: Sydney's photo shows again.
   var UNDO_CAP = 300, AUTO_HINT_MOVES = 3, AUTO_COMPLETE_LIMIT = 800;
   var GOLF_HOLES = 9, GOLF_PAR = 4, DOUBLE_TAP_MS = 350, DRAG_PX = 6;
   var TABLES = [['japan', 'Japan'], ['sydney', 'Sydney'], ['bermuda', 'Bermuda'], ['savannah', 'Savannah']];
@@ -84,7 +85,7 @@
   // Sounds — Web Audio, mixed with whatever else is playing. A new instance of a sound cuts off
   // the same sound still ringing.
 
-  var NAMES = ['shuffle', 'deal', 'place', 'win', 'scooter', 'boarding', 'horn_ship', 'horn_tug', 'horn_whistle', 'city_hall', 'cabin_chime', 'flute_open', 'flute_win'];
+  var NAMES = ['shuffle', 'deal', 'place', 'win', 'scooter', 'boarding', 'horn_ship', 'horn_tug', 'horn_whistle', 'city_hall', 'cabin_chime', 'flute_open', 'flute_win', 'kookaburra_1', 'kookaburra_2', 'kookaburra_3'];
   var actx = null, buffers = {}, playing = {};
   (function initAudio() {
     var C = window.AudioContext || window.webkitAudioContext;
@@ -163,6 +164,7 @@
     var my = ++job;
     var r = B.deal(v, S.dealtSuits);
     resetGameState();
+    gameSerial++;
     S.board = r[0];
     S.dealOrder = {};
     r[1].forEach(function (id, i) { S.dealOrder[id] = i; });
@@ -201,6 +203,7 @@
     S.dealtSuits = g.spiderSuits;
     if (B.isSpider(g.board)) S.spiderSuits = g.spiderSuits;
     S.dealOrder = {};
+    gameSerial++;
     showScreen('game');
     afterChange(false);
   }
@@ -262,7 +265,8 @@
 
   function homeTouch(f) {
     var L = loc();
-    if (L.homeSound) play(L.homeSound);
+    var sound = typeof L.homeSound === 'function' ? L.homeSound() : L.homeSound;
+    if (sound) play(sound);
     if (L.homeTouch && layout) S.boardFx.push(L.homeTouch(layout, f, sealCircle()));
   }
 
@@ -977,6 +981,14 @@
     lastFrame = now; clock += dt;
     var L = loc();
     if (S.screen === 'game' && L.animatedSurface) drawSurface(clock);
+    // Animated scenery (Sydney), behind the cards, in board coordinates.
+    var sc = $('board-scene');
+    if (S.screen === 'game' && L.sceneryFrame && layout && sc) {
+      var sd = devicePixelRatio || 1, sctx = sc.getContext('2d');
+      sctx.setTransform(sd, 0, 0, sd, 0, 0);
+      sctx.clearRect(0, 0, sc.width / sd, sc.height / sd);
+      L.sceneryFrame(sctx, layout, layout.sceneHeight, dt, S.location + ':' + gameSerial);
+    }
 
     // Overlay: openings and the celebration, in window coordinates.
     if (S.celebration || S.overlayFx.length || overlayDirty) {

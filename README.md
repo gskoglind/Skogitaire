@@ -20,6 +20,7 @@ static files. Live at https://gskoglind.github.io/Skogitaire/.
 | `js/seeded.js` | A seeded random generator for drawings |
 | `sounds/*.m4a` | The table sounds, the flute, the horns, the bells |
 | `seal.png` | Gary's GS sakura seal |
+| `sydney_balcony.jpg` | Gary's photo of his dad on his Neutral Bay balcony (Sydney's table) |
 | `manifest.webmanifest`, `sw.js`, icons | Install as an app, work offline |
 | `PORTING.md` | How the location modules plug in |
 | `dev/` | Test tools (not needed to run the game) |
@@ -27,7 +28,7 @@ static files. Live at https://gskoglind.github.io/Skogitaire/.
 ## Publishing an update
 
 Push to `main`; GitHub Pages serves the repo root. Then **bump the cache name** at the top of
-`sw.js` (`solitaire-v8` → `v9`) and `BUILD` in `js/app.js` whenever any file changes. Code is fetched
+`sw.js` (`solitaire-v9` → `v10`) and `BUILD` in `js/app.js` whenever any file changes. Code is fetched
 network-first, so fixes land on the next load; the build number on the start screen shows which
 version a browser is running.
 

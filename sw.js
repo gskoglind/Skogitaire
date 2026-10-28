@@ -1,5 +1,5 @@
 /* Bump CACHE when you change the game so browsers pick up the new version. */
-const CACHE = 'solitaire-v8';
+const CACHE = 'solitaire-v9';
 
 const ASSETS = [
   './',
@@ -10,6 +10,7 @@ const ASSETS = [
   './icon-maskable-512.png',
   './apple-touch-icon.png',
   './seal.png',
+  './sydney_balcony.jpg',
   './js/seeded.js',
   './js/engine.js',
   './js/layout.js',
@@ -32,7 +33,10 @@ const ASSETS = [
   './sounds/city_hall.m4a',
   './sounds/cabin_chime.m4a',
   './sounds/flute_open.m4a',
-  './sounds/flute_win.m4a'
+  './sounds/flute_win.m4a',
+  './sounds/kookaburra_1.m4a',
+  './sounds/kookaburra_2.m4a',
+  './sounds/kookaburra_3.m4a'
 ];
 
 self.addEventListener('install', function (e) {

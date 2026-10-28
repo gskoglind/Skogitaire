@@ -18,7 +18,7 @@ for `devicePixelRatio`, so draw in CSS px. Time is in seconds.
 | `js/celebration.js` | app | The card cascade; hosts each location's win layer |
 | `js/app.js` | app | Screens, board, input, sounds, persistence |
 | `js/loc-japan.js` | location | Torii, bamboo, seal petals, sakura win petals |
-| `js/loc-sydney.js` | location | Lawn, bridge, sign, flying foxes, fireworks (opening + win) |
+| `js/loc-sydney.js` | location | Lawn, balcony photo → picnic and runners, fig camp, kookaburra, sign, flying foxes, fireworks |
 | `js/loc-bermuda.js` | location | Beach/ocean surface, moon gate, scooters, kites, landing announcement |
 | `js/loc-savannah.js` | location | Fountain + walks + visitors, riverboats, river parade, crows, gold-dome back |
 
@@ -69,11 +69,14 @@ houses) use the small seeded PRNG `SEEDED(seed)` that the app provides globally:
   // Static scenery at the bottom of the board, in board coordinates. Drawn once per layout
   // change on a canvas of size (layout.boardWidth × sceneHeight). Both variants.
   scenery(ctx, layout, sceneHeight),
+  // Animated scenery instead (Sydney): drawn every frame on the same canvas, cleared first.
+  // `game` changes with each deal, resume or table switch, so a module can restart its timeline.
+  sceneryFrame(ctx, layout, sceneHeight, dt, game),
 
   // Home touch: a card went to foundation f. Return an Effect in board coordinates, drawn on
   // a board-sized overlay canvas ABOVE the cards. `seal` = {cx, cy, d} (Japan's petal origin).
   homeTouch(layout, f, seal) -> Effect,
-  homeSound: 'scooter' | 'boarding' | null,
+  homeSound: 'scooter' | 'boarding' | null | function () -> name,   // Sydney picks a kookaburra take
 
   // Opening: a fresh deal began (not resume). Full-window coordinates, drawn above the board.
   opening(w, h, play) -> Effect,
@@ -101,7 +104,7 @@ Effects must not block input and must be cheap enough for 60 fps on a phone.
 ### Sounds (names the app knows)
 
 `shuffle, deal, place, win, scooter, boarding, horn_ship, horn_tug, horn_whistle, city_hall,
-cabin_chime, flute_open, flute_win`.
+cabin_chime, flute_open, flute_win, kookaburra_1, kookaburra_2, kookaburra_3`.
 
 ## Conventions
 
