@@ -460,7 +460,7 @@
     function leg(sg, color) {
       var a = 0.6 * s * sg;
       var kx = hx + Math.sin(a) * 0.26 * u, ky = hy + Math.cos(a) * 0.26 * u;
-      var b = 0.25 + 0.9 * Math.max(0, -sg * co);
+      var b = 0.25 + 0.9 * Math.max(0, sg * co); // The knee folds on the forward swing.
       var fx = kx + Math.sin(a - b) * 0.25 * u, fy = ky + Math.cos(a - b) * 0.25 * u;
       seg(c, color, hx, hy, kx, ky, 0.075 * u, 'round');
       seg(c, color, kx, ky, fx, fy, 0.065 * u, 'round');

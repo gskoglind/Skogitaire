@@ -421,7 +421,7 @@
         b.age += dt;
         if (b.age > 0.3) b.speed = Math.min(110, b.speed + 120 * dt);
         b.x -= b.speed * dt;
-        b.wheel -= (1.2 + b.speed / 20) * dt;
+        b.wheel += (1.2 + b.speed / 20) * dt;
         b.untilWake -= dt;
         var away = b.x < -1.4 * b.height;
         // (Kotlin keeps laying wake after the boat has left, so its wake never empties; stop
@@ -678,7 +678,7 @@
           var s = ships[i];
           s.age += dt;
           s.x += s.lane.dir * SPEED * s.lane.scale * dt;
-          s.wheel -= 3 * dt;
+          s.wheel += 3 * dt;
           if (s.horns && !s.honked && s.age > 0.5) {
             s.honked = true;
             if (play) play(s.kind.horn);
